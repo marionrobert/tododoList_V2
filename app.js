@@ -15,7 +15,7 @@ app.use(express.static("public"));
 
 mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
 
-// create the schema
+// create the schemas
 const itemsSchema = {
   name: {
     type: String,
@@ -23,8 +23,17 @@ const itemsSchema = {
   }
 };
 
+const listsSchema = {
+  name: {
+    type: String,
+    required: true
+  },
+  items: [itemsSchema]
+}
+
 // create the model based on the schema
 const Item = mongoose.model("Item", itemsSchema);
+const List = mongoose.model("List", listsSchema);
 
 // create documents and insert them it DB
 const item1 = new Item({name: "Cooking"})
@@ -55,6 +64,31 @@ app.get("/", function(req, res) {
     }
   });
 });
+
+app.get("/:listName", function(req, res) {
+  const listName = req.params.listName;
+  List.findOne({name: listName}, function(err, foundList){
+    console.log(foundList);
+    if (!err){
+      if (!foundList) {
+        // create a new list
+        const list = new List({
+          name: listName,
+          items: defaultItems
+        });
+        list.save();
+        res.redirect(`/${listName}`)
+      } else {
+        // show an existing list
+        console.log(foundList.name)
+        console.log(foundList.items)
+        res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
+      }
+    }
+  })
+});
+
+
 
 app.post("/", function(req, res){
   const itemName = req.body.newItem;
