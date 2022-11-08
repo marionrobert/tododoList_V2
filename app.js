@@ -68,7 +68,7 @@ app.get("/", function(req, res) {
 app.get("/:listName", function(req, res) {
   const listName = req.params.listName;
   List.findOne({name: listName}, function(err, foundList){
-    console.log(foundList);
+    // console.log(foundList);
     if (!err){
       if (!foundList) {
         // create a new list
@@ -79,9 +79,9 @@ app.get("/:listName", function(req, res) {
         list.save();
         res.redirect(`/${listName}`)
       } else {
-        // show an existing list
-        console.log(foundList.name)
-        console.log(foundList.items)
+        // // show an existing list
+        // console.log(foundList.name)
+        // console.log(foundList.items)
         res.render("list", {listTitle: foundList.name, newListItems: foundList.items});
       }
     }
@@ -90,10 +90,23 @@ app.get("/:listName", function(req, res) {
 
 
 app.post("/", function(req, res){
+  console.log(req.body)
   const itemName = req.body.newItem;
+  const listName = req.body.list;
+
   const newItem = new Item({name: itemName})
-  newItem.save()
-  res.redirect("/")
+
+  if (listName === "Today"){
+    newItem.save()
+    res.redirect("/")
+  } else {
+    List.findOne({name: listName}, function(err, foundList){
+      foundList.items.push(newItem);
+      foundList.save()
+      res.redirect(`/${listName}`)
+    })
+  }
+
 });
 
 app.post("/delete", function(req, res){
@@ -108,13 +121,6 @@ app.post("/delete", function(req, res){
   })
 })
 
-app.get("/work", function(req,res){
-  res.render("list", {listTitle: "Work List", newListItems: workItems});
-});
-
-app.get("/about", function(req, res){
-  res.render("about");
-});
 
 app.listen(3000, function() {
   console.log("Server started on port 3000");
