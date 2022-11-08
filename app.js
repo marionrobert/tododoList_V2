@@ -3,7 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-const date = require(__dirname + "/date.js");
+// const date = require(__dirname + "/date.js");
 
 
 const app = express();
@@ -15,6 +15,7 @@ app.use(express.static("public"));
 
 mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
 
+// create the schema
 const itemsSchema = {
   name: {
     type: String,
@@ -22,14 +23,37 @@ const itemsSchema = {
   }
 };
 
-const item = mongoose.model("Item", itemsSchema);
+// create the model based on the schema
+const Item = mongoose.model("Item", itemsSchema);
+
+// create documents and insert them it DB
+const item1 = new Item({name: "Cooking"})
+const item2 = new Item({name: "Wahsing"})
+const item3 = new Item({name: "Go shopping"})
+
+const defaultItems = [item1, item2, item3]
+
 
 app.get("/", function(req, res) {
-
-const day = date.getDate();
-
-  res.render("list", {listTitle: day, newListItems: items});
-
+  Item.find(function(err, results) {
+    if (results.length === 0){
+      Item.insertMany(defaultItems, function(err, result){
+        if (err){
+          console.log(err);
+        } else {
+          console.log("Successfully saved default items to DB.");
+          console.log(result);
+        }
+      });
+      res.redirect("/");
+    } else {
+      if (err) {
+        console.log(err);
+      } else {
+        res.render("list", {listTitle: "Today", newListItems: results});
+      }
+    }
+  });
 });
 
 app.post("/", function(req, res){
