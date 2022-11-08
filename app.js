@@ -3,6 +3,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
+const _ = require("lodash");
 // const date = require(__dirname + "/date.js");
 
 
@@ -66,7 +67,8 @@ app.get("/", function(req, res) {
 });
 
 app.get("/:listName", function(req, res) {
-  const listName = req.params.listName;
+  const listName = _.capitalize(req.params.listName);
+  
   List.findOne({name: listName}, function(err, foundList){
     // console.log(foundList);
     if (!err){
@@ -109,16 +111,28 @@ app.post("/", function(req, res){
 
 });
 
+
 app.post("/delete", function(req, res){
-  const IdcheckedItem = req.body.checkbox
-  Item.findByIdAndRemove(IdcheckedItem, function(err){
-    if (err) {
-      console.log(err);
-    } else {
-      console.log(`${IdcheckedItem} deleted`)
-      res.redirect("/")
-    }
-  })
+  const IdcheckedItem = req.body.checkbox;
+  const listName = req.body.list;
+
+  if (listName === "Today"){
+    // it's default list
+    Item.findByIdAndRemove(IdcheckedItem, function(err){
+      if (!err) {
+        console.log(`${IdcheckedItem} deleted`)
+        res.redirect("/")
+      }
+    });
+  } else {
+    List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: IdcheckedItem}}}, function(err, foundList){
+      if (!err){
+        res.redirect(`/${listName}`)
+      }
+    })
+  }
+
+
 })
 
 
