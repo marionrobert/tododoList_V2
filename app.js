@@ -57,14 +57,23 @@ app.get("/", function(req, res) {
 });
 
 app.post("/", function(req, res){
-
   const itemName = req.body.newItem;
   const newItem = new Item({name: itemName})
   newItem.save()
   res.redirect("/")
-
-
 });
+
+app.post("/delete", function(req, res){
+  const IdcheckedItem = req.body.checkbox
+  Item.findByIdAndRemove(IdcheckedItem, function(err){
+    if (err) {
+      console.log(err);
+    } else {
+      console.log(`${IdcheckedItem} deleted`)
+      res.redirect("/")
+    }
+  })
+})
 
 app.get("/work", function(req,res){
   res.render("list", {listTitle: "Work List", newListItems: workItems});
