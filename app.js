@@ -14,7 +14,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/todolistDB", {useNewUrlParser: true});
+mongoose.connect("mongodb+srv://admin-marion:UMW4fwfRDSPoW4l1@cluster0.zwkiqhd.mongodb.net/todolistDB", {useNewUrlParser: true});
 
 // create the schemas
 const itemsSchema = {
@@ -68,7 +68,7 @@ app.get("/", function(req, res) {
 
 app.get("/:listName", function(req, res) {
   const listName = _.capitalize(req.params.listName);
-  
+
   List.findOne({name: listName}, function(err, foundList){
     // console.log(foundList);
     if (!err){
